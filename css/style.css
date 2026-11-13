@@ -1,0 +1,1157 @@
+/* css/style.css — JAIPUR RUSH: Pink City Grand Prix */
+:root {
+  --bg-dark: #140b24;
+  --panel-bg: rgba(21, 13, 38, 0.92);
+  --pink-accent: #ff477e;
+  --orange-accent: #ff9248;
+  --gold-accent: #ffd166;
+  --cyan-accent: #00f5d4;
+  --text-main: #ffffff;
+  --text-muted: #b5a8ce;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #120822;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-main);
+}
+
+#game-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  z-index: 1;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ==================== TOP YOUTUBE RAPPERIYA BAALAM & MP3 BAR ==================== */
+#music-bar {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(17, 10, 32, 0.94);
+  border: 1.5px solid rgba(255, 209, 102, 0.65);
+  border-radius: 999px;
+  padding: 4px 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  max-width: 96vw;
+  white-space: nowrap;
+}
+
+.osm-badge {
+  background: linear-gradient(90deg, #059669, #10b981);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.4px;
+}
+
+.music-icon {
+  font-size: 13px;
+}
+
+#song-title-text {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--gold-accent);
+  max-width: 185px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-btn, .music-upload-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.music-btn:hover, .music-upload-btn:hover {
+  background: var(--pink-accent);
+  border-color: #fff;
+}
+
+.music-select {
+  background: rgba(30, 18, 54, 0.95);
+  color: #ffd166;
+  border: 1px solid rgba(255, 209, 102, 0.5);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  max-width: 195px;
+  cursor: pointer;
+  outline: none;
+}
+
+.yt-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  width: 105px;
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.yt-input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.yt-go-btn {
+  background: #dc2626;
+  border-color: #fca5a5;
+}
+
+.glb-btn {
+  border-color: var(--cyan-accent);
+  color: var(--cyan-accent);
+}
+
+/* Mini YouTube Video Player Dock */
+#yt-player-dock {
+  position: fixed;
+  bottom: 120px;
+  left: 20px;
+  z-index: 45;
+  background: rgba(17, 10, 32, 0.95);
+  border: 2px solid #ef4444;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+#yt-player-dock.minimized {
+  width: 1px;
+  height: 1px;
+  opacity: 0.01;
+  pointer-events: none;
+}
+
+.yt-dock-header {
+  background: #dc2626;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  text-align: center;
+}
+
+/* ==================== JAIPUR STREET CALLOUT & POLICE CHALLAN BANNERS ==================== */
+.voice-toast {
+  position: fixed;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 46;
+  background: rgba(124, 45, 18, 0.95);
+  border: 2px solid var(--gold-accent);
+  border-radius: 14px;
+  padding: 6px 18px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.voice-hindi {
+  font-size: 13px;
+  font-weight: 800;
+  color: #fef08a;
+}
+
+.voice-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.challan-alert {
+  position: fixed;
+  top: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 48;
+  background: linear-gradient(135deg, rgba(153, 27, 27, 0.96), rgba(30, 58, 138, 0.96));
+  border: 2.5px solid #fef08a;
+  border-radius: 14px;
+  padding: 8px 22px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
+  animation: challanPulse 0.45s infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes challanPulse {
+  from { border-color: #ef4444; box-shadow: 0 0 18px rgba(239, 68, 68, 0.8); }
+  to { border-color: #3b82f6; box-shadow: 0 0 18px rgba(59, 130, 246, 0.8); }
+}
+
+.challan-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #fde047;
+  letter-spacing: 0.8px;
+}
+
+.challan-title {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 2px;
+}
+
+.challan-sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+/* ==================== OVERLAY SCREENS ==================== */
+.overlay-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.top-status-bar {
+  position: absolute;
+  top: 52px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.status-pill {
+  background: var(--panel-bg);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.btn-pill {
+  cursor: pointer;
+}
+
+.btn-pill:hover {
+  border-color: var(--gold-accent);
+  transform: scale(1.05);
+}
+
+/* ==================== GARAGE LEFT PANEL ==================== */
+.garage-left-panel {
+  position: absolute;
+  bottom: 20px;
+  left: 24px;
+  width: 395px;
+  max-width: 94vw;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  pointer-events: auto;
+}
+
+.brand-logo {
+  text-align: center;
+  transform: rotate(-2deg);
+  margin-bottom: 2px;
+}
+
+.logo-top {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gold-accent);
+  letter-spacing: 3px;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.logo-main {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 54px;
+  font-weight: 800;
+  font-style: italic;
+  line-height: 0.88;
+  background: linear-gradient(180deg, #ff9e44 0%, #ff3b7c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(3px 4px 0 #000);
+}
+
+.logo-ribbon {
+  display: inline-block;
+  margin-top: 4px;
+  background: #ffd6e8;
+  color: #1e0b36;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 4px;
+  letter-spacing: 1.2px;
+  box-shadow: 0 3px 0 var(--pink-accent);
+}
+
+.vehicle-card {
+  position: relative;
+  background: var(--panel-bg);
+  border: 2px solid #fbcfe8;
+  border-radius: 16px;
+  padding: 13px 20px;
+  box-shadow: 0 5px 0 var(--pink-accent), 0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink-accent), var(--orange-accent));
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-arrow.left { left: -16px; }
+.carousel-arrow.right { right: -16px; }
+
+.vehicle-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.vehicle-card-header h2 {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--gold-accent);
+}
+
+.ind-plate {
+  background: #facc15;
+  color: #111;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1.5px solid #000;
+}
+
+.stat-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #ddd6fe;
+}
+
+.stat-bar {
+  height: 7px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.stat-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pink-accent), var(--orange-accent));
+  border-radius: 99px;
+  transition: width 0.25s ease;
+}
+
+.vehicle-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.class-badge {
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.index-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.upgrade-btn {
+  background: linear-gradient(90deg, var(--pink-accent), var(--orange-accent));
+  border: 1.5px solid #fff;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 99px;
+  cursor: pointer;
+}
+
+/* 7 Vehicle Quick Tabs */
+.vehicle-quick-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.v-tab {
+  background: var(--panel-bg);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 5px 4px;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.v-tab.active {
+  background: linear-gradient(90deg, var(--pink-accent), var(--orange-accent));
+  color: #fff;
+  border-color: #fff;
+}
+
+.mode-selector-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.mode-pill {
+  background: var(--panel-bg);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: var(--text-muted);
+  padding: 7px 8px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mode-pill.active {
+  background: linear-gradient(90deg, var(--pink-accent), var(--orange-accent));
+  color: #fff;
+  border-color: #fff;
+}
+
+.district-selector-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.district-pill {
+  flex: 1 1 30%;
+  background: var(--panel-bg);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: #cbd5e1;
+  padding: 5px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.district-pill.active {
+  border-color: var(--gold-accent);
+  color: var(--gold-accent);
+  background: rgba(255, 209, 102, 0.14);
+}
+
+.start-race-cta {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 13px;
+  border: 2px solid #fff;
+  background: linear-gradient(90deg, #ff477e 0%, #ff9248 100%);
+  color: #fff;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  font-style: italic;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #9d174d, 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+.secondary-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sub-action-card {
+  background: var(--panel-bg);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+  padding: 7px 10px;
+  color: #fff;
+  cursor: pointer;
+  text-align: center;
+}
+
+.sub-title {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sub-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ==================== DAILY CHALLENGES CARD ==================== */
+.challenges-card {
+  position: absolute;
+  bottom: 20px;
+  right: 24px;
+  width: 340px;
+  max-width: 92vw;
+  background: var(--panel-bg);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+.challenges-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ch-title {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--gold-accent);
+}
+
+.ch-tag {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.challenge-item {
+  margin-bottom: 9px;
+}
+
+.ch-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.ch-progress-text {
+  color: var(--gold-accent);
+  font-weight: 800;
+}
+
+.ch-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.ch-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #ffd166);
+  border-radius: 99px;
+}
+
+.ch-footer {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-top: 6px;
+}
+
+/* ==================== IN-GAME RACING HUD ==================== */
+.hud-top-left {
+  position: absolute;
+  top: 48px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pos-lap-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-style: italic;
+  text-shadow: 2px 3px 0 #000;
+}
+
+.rank-num {
+  font-size: 46px;
+  font-weight: 800;
+}
+
+.rank-suffix {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold-accent);
+}
+
+.rank-total {
+  font-size: 20px;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+
+.lap-block {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.timer-row {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  text-shadow: 1px 2px 0 #000;
+}
+
+.best-time {
+  color: var(--gold-accent);
+}
+
+.landmark-badge {
+  background: var(--panel-bg);
+  border: 1.5px solid var(--orange-accent);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fde68a;
+  width: fit-content;
+}
+
+/* Live Traffic Signal HUD Pill */
+.traffic-signal-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  width: fit-content;
+}
+
+.signal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.signal-dot.green {
+  background: #00e676;
+  box-shadow: 0 0 8px #00e676;
+}
+
+.signal-dot.yellow {
+  background: #ffea00;
+  box-shadow: 0 0 8px #ffea00;
+}
+
+.signal-dot.red {
+  background: #ff1744;
+  box-shadow: 0 0 10px #ff1744;
+}
+
+.hud-leaderboard {
+  background: rgba(17, 10, 32, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  padding: 6px 10px;
+  width: 205px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lb-row {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cbd5e1;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.lb-row.me {
+  background: linear-gradient(90deg, rgba(255, 71, 126, 0.45), rgba(255, 146, 72, 0.45));
+  color: var(--gold-accent);
+  font-weight: 800;
+}
+
+.hud-event-banner {
+  position: absolute;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--panel-bg);
+  border: 2px solid var(--gold-accent);
+  border-radius: 999px;
+  padding: 6px 20px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.hud-top-right {
+  position: absolute;
+  top: 48px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  pointer-events: auto;
+}
+
+.hud-icon-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.hud-sq-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--panel-bg);
+  border: 1.5px solid #fff;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.minimap-box {
+  background: #f6efe9;
+  border: 3px solid #1e1233;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+.hud-coins-row {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.hud-throttle-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.throttle-bar {
+  width: 75px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.throttle-fill {
+  height: 100%;
+  background: #10b981;
+}
+
+.hud-speedometer {
+  position: absolute;
+  left: 41%;
+  top: 56%;
+  transform: translate(-110%, -50%);
+  text-align: center;
+  font-family: 'Chakra Petch', sans-serif;
+  font-style: italic;
+  text-shadow: 2px 3px 0 #000;
+}
+
+.gear-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ff477e;
+}
+
+.kmh-num {
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 0.9;
+}
+
+.kmh-unit {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.hud-bottom-left {
+  position: absolute;
+  bottom: 18px;
+  left: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.hud-bottom-right {
+  position: absolute;
+  bottom: 18px;
+  right: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.action-orb {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: var(--panel-bg);
+  border: 3.5px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-family: 'Chakra Petch', sans-serif;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+.nitro-orb.ready {
+  border-color: var(--cyan-accent);
+  background: radial-gradient(circle, #ff477e 0%, #831843 100%);
+  box-shadow: 0 0 18px rgba(0, 245, 212, 0.75);
+}
+
+.orb-label {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.orb-sub {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--cyan-accent);
+}
+
+.key-hint {
+  font-size: 9px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 1px 1px 0 #000;
+}
+
+.hud-bottom-center {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  pointer-events: auto;
+}
+
+.live-vehicle-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  background: var(--panel-bg);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+
+.v-pill {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #cbd5e1;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.v-pill.active {
+  background: linear-gradient(90deg, var(--pink-accent), var(--orange-accent));
+  color: #fff;
+  border-color: #fff;
+}
+
+.controls-hint {
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(15, 8, 28, 0.8);
+  padding: 3px 12px;
+  border-radius: 999px;
+  color: #e2e8f0;
+}
+
+/* ==================== MODALS ==================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(12, 6, 24, 0.84);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-card {
+  width: 430px;
+  max-width: 92vw;
+  background: var(--panel-bg);
+  border: 2.5px solid var(--gold-accent);
+  border-radius: 18px;
+  padding: 22px 24px;
+  text-align: center;
+}
+
+.modal-ribbon {
+  display: inline-block;
+  background: var(--pink-accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.modal-card h2 {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 32px;
+  color: var(--gold-accent);
+  margin-bottom: 6px;
+}
+
+.modal-card p {
+  font-size: 13px;
+  color: #cbd5e1;
+  margin-bottom: 16px;
+}
+
+.results-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.res-box {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.res-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 800;
+}
+
+.res-val {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--gold-accent);
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ==================== MOBILE & PHONE RESPONSIVE CONTROLS ==================== */
+.touch-steer-pad,
+.touch-pedal-pad {
+  display: none;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.touch-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  background: rgba(21, 13, 38, 0.88);
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  color: #fff;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+}
+
+.touch-btn:active {
+  background: var(--pink-accent);
+  transform: scale(0.95);
+}
+
+.pedal-gas {
+  border-color: #10b981;
+  color: #6ee7b7;
+}
+
+.pedal-brake {
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
+@media (pointer: coarse), (max-width: 960px) {
+  .touch-steer-pad,
+  .touch-pedal-pad {
+    display: flex;
+  }
+
+  .controls-hint,
+  .key-hint {
+    display: none;
+  }
+
+  #music-bar {
+    top: 6px;
+    padding: 3px 8px;
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .garage-left-panel {
+    bottom: 10px;
+    left: 10px;
+    width: calc(100vw - 20px);
+    max-width: 390px;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+
+  .challenges-card {
+    display: none;
+  }
+
+  .hud-leaderboard {
+    display: none;
+  }
+
+  .minimap-box canvas {
+    width: 120px;
+    height: 96px;
+  }
+
+  .hud-bottom-center {
+    bottom: 8px;
+    max-width: 56vw;
+  }
+
+  .v-pill {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .action-orb {
+    width: 60px;
+    height: 60px;
+  }
+}

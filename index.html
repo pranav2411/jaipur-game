@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>JAIPUR RUSH — Pink City Grand Prix (गुलाबी नगरी)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;1,700;1,800&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- 3D WebGL Canvas -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- RAPPERIYA BAALAM YOUTUBE & MP3 MUSIC PLAYER BAR -->
+  <div id="music-bar">
+    <span class="osm-badge">⚡ 60 FPS</span>
+    <button id="btn-music-toggle" class="music-btn" title="Play / Pause Music">⏸</button>
+    <button id="btn-next-song" class="music-btn" title="Next Rapperiya Baalam Song">⏭</button>
+
+    <select id="yt-preset-select" class="music-select" title="Choose Rapperiya Baalam / Rajasthani Song">
+      <option value="0">🎤 Rapperiya Baalam — Mharo Rajasthan</option>
+      <option value="1">🔥 Rapperiya Baalam — Shoorveer</option>
+      <option value="2">🐪 Mame Khan — Chaudhary</option>
+    </select>
+
+    <input id="yt-url-input" type="text" placeholder="YouTube URL/ID..." class="yt-input" />
+    <button id="btn-yt-load" class="music-btn yt-go-btn" title="Play YouTube URL">▶ YT</button>
+    <button id="btn-yt-video-toggle" class="music-btn" title="Show / Hide Mini YouTube Video">📺</button>
+
+    <label class="music-upload-btn" title="Play your own MP3 song">
+      📂 MP3
+      <input type="file" id="custom-mp3-input" accept="audio/*" hidden />
+    </label>
+    <label class="music-upload-btn glb-btn" title="Import custom .GLB 3D Vehicle">
+      🚗 .GLB
+      <input type="file" id="custom-glb-input" accept=".glb,.gltf" hidden />
+    </label>
+  </div>
+
+  <!-- MINI YOUTUBE VIDEO PLAYER DOCK (BOTTOM LEFT ABOVE NITRO OR CAN BE MINIMIZED) -->
+  <div id="yt-player-dock" class="minimized">
+    <div class="yt-dock-header">
+      <span>🎤 Rapperiya Baalam YouTube</span>
+    </div>
+    <div id="yt-hidden-player"></div>
+  </div>
+
+  <!-- JAIPUR STREET CALLOUT BANNER (NO ROBOTIC AI TTS) -->
+  <div id="voice-toast" class="voice-toast hidden">
+    <div id="voice-toast-hindi" class="voice-hindi">🗣️ "खम्मा घणी सा! जयपुर में पधारो म्हारे देश!"</div>
+    <div id="voice-toast-sub" class="voice-sub">Welcome to Jaipur - The Pink City!</div>
+  </div>
+
+  <!-- RAJASTHAN POLICE TRAFFIC CHALLAN / FINE ALERT -->
+  <div id="challan-alert" class="challan-alert hidden">
+    <div class="challan-badge">🚓 RAJASTHAN TRAFFIC POLICE E-CHALLAN • जयपुर यातायात पुलिस</div>
+    <div id="challan-title" class="challan-title">🚨 RED LIGHT JUMP: -₹150 COINS</div>
+    <div id="challan-sub" class="challan-sub">Section 184 MV Act • Obey Red Traffic Signals!</div>
+  </div>
+
+  <!-- ==================== GARAGE / MAIN MENU OVERLAY ==================== -->
+  <div id="menu-screen" class="overlay-screen">
+    <!-- Top Right Currency & Status Bar -->
+    <div class="top-status-bar">
+      <div class="status-pill"><span class="coin-dot">🪙</span> <span id="menu-coins">3,250</span></div>
+      <div class="status-pill">🏆 <span id="menu-trophies">1/6</span></div>
+      <div class="status-pill">🚦 TRAFFIC RULES ON</div>
+      <button id="btn-menu-horn" class="status-pill btn-pill" title="Test Horn (H)">📢 HORN</button>
+    </div>
+
+    <!-- Left Garage Panel -->
+    <div class="garage-left-panel">
+      <div class="brand-logo">
+        <div class="logo-top">JAIPUR</div>
+        <div class="logo-main">RUSH</div>
+        <div class="logo-ribbon">PINK CITY GRAND PRIX • गुलाबी नगरी</div>
+      </div>
+
+      <!-- Vehicle Stats Card -->
+      <div class="vehicle-card">
+        <button id="prev-vehicle" class="carousel-arrow left" aria-label="Previous vehicle">‹</button>
+        <button id="next-vehicle" class="carousel-arrow right" aria-label="Next vehicle">›</button>
+
+        <div class="vehicle-card-header">
+          <h2 id="vehicle-name">BAJAJ RE JAIPUR AUTO</h2>
+          <span id="vehicle-plate" class="ind-plate">RJ 14 PA 4207</span>
+        </div>
+
+        <div class="stat-rows">
+          <div class="stat-row">
+            <span class="stat-label">SPEED</span>
+            <div class="stat-bar"><div id="stat-speed" class="stat-fill" style="width: 68%"></div></div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">ACCEL</span>
+            <div class="stat-bar"><div id="stat-accel" class="stat-fill" style="width: 78%"></div></div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">GRIP</span>
+            <div class="stat-bar"><div id="stat-grip" class="stat-fill" style="width: 86%"></div></div>
+          </div>
+        </div>
+
+        <div class="vehicle-card-footer">
+          <span id="vehicle-class-badge" class="class-badge">3-WHEELER • LVL 1</span>
+          <span id="vehicle-index-badge" class="index-badge">1 / 7</span>
+          <button id="btn-upgrade" class="upgrade-btn">🔧 UPGRADE (250)</button>
+        </div>
+      </div>
+
+      <!-- 7 Real Indian Vehicle Quick Selector Pills -->
+      <div class="vehicle-quick-tabs" id="vehicle-quick-tabs">
+        <button class="v-tab active" data-vehicle="auto">🛺 Auto</button>
+        <button class="v-tab" data-vehicle="scooter">🛵 Activa 6G</button>
+        <button class="v-tab" data-vehicle="xpulse">🏍️ XPulse 200</button>
+        <button class="v-tab" data-vehicle="bike">🏍️ Classic 350</button>
+        <button class="v-tab" data-vehicle="car">🚗 Swift</button>
+        <button class="v-tab" data-vehicle="bus">🚌 JCTSL Bus</button>
+        <button class="v-tab" data-vehicle="erickshaw">⚡ Tirri</button>
+      </div>
+
+      <!-- Race Mode & Jaipur District Selector -->
+      <div class="mode-selector-row">
+        <button class="mode-pill active" data-mode="race">🏁 Grand Prix (8 Racers)</button>
+        <button class="mode-pill" data-mode="roam">🌍 Open World Jaipur</button>
+      </div>
+
+      <div class="district-selector-row">
+        <button class="district-pill active" data-district="full">Full Jaipur</button>
+        <button class="district-pill" data-district="hawamahal">Hawa Mahal & Shastri Ngr</button>
+        <button class="district-pill" data-district="vaishali">Vaishali & Mansarovar Flyover</button>
+        <button class="district-pill" data-district="malviya">Malviya Ngr & WTP</button>
+        <button class="district-pill" data-district="forts">Amber, Jaigarh & Nahargarh</button>
+      </div>
+
+      <!-- Primary Start CTA -->
+      <button id="btn-start-race" class="start-race-cta">
+        <span class="cta-main">RACE 1/3 चलो!</span>
+      </button>
+
+      <!-- Secondary Actions -->
+      <div class="secondary-actions">
+        <button id="btn-mode-info" class="sub-action-card">
+          <div class="sub-title">⚙️ Mode Setup</div>
+          <div class="sub-desc">3 Laps • Traffic Signals • Police Fine</div>
+        </button>
+        <button id="btn-horn-test" class="sub-action-card">
+          <div class="sub-title">🎺 Desi Horn</div>
+          <div class="sub-desc">Press H in-game anytime</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Right Jaipur Daily Challenges Card -->
+    <div class="challenges-card">
+      <div class="challenges-header">
+        <div>
+          <span class="target-icon">🎯</span>
+          <span class="ch-title">JAIPUR DAILY CHALLENGES</span>
+        </div>
+        <span class="ch-tag">PINK CITY</span>
+      </div>
+
+      <div class="challenge-item">
+        <div class="ch-row">
+          <span>Collect 8 N₂O canisters</span>
+          <span id="ch-nitro-text" class="ch-progress-text">3/8 • 🪙 200</span>
+        </div>
+        <div class="ch-bar"><div id="ch-nitro-bar" class="ch-fill" style="width: 37%"></div></div>
+      </div>
+
+      <div class="challenge-item">
+        <div class="ch-row">
+          <span>Drift 300m on Jaipur Flyovers</span>
+          <span id="ch-drift-text" class="ch-progress-text">120/300m • 🪙 400</span>
+        </div>
+        <div class="ch-bar"><div id="ch-drift-bar" class="ch-fill" style="width: 40%"></div></div>
+      </div>
+
+      <div class="challenge-item">
+        <div class="ch-row">
+          <span>Visit all 7 Jaipur Zones & Forts</span>
+          <span id="ch-landmark-text" class="ch-progress-text">1/7 • 🪙 750</span>
+        </div>
+        <div class="ch-bar"><div id="ch-landmark-bar" class="ch-fill" style="width: 14%"></div></div>
+      </div>
+
+      <div class="ch-footer">
+        ZONES: Hawa Mahal • Shastri Nagar • Vaishali Flyover • Mansarovar • Malviya Nagar WTP • Patrika Gate • Amber/Jaigarh/Nahargarh Forts
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== IN-GAME RACING HUD OVERLAY ==================== -->
+  <div id="hud-screen" class="overlay-screen hidden">
+    <!-- Top Left Position, Lap, Timer, Traffic Signal & Landmark Badge -->
+    <div class="hud-top-left">
+      <div class="pos-lap-row">
+        <div class="pos-block">
+          <span id="hud-rank" class="rank-num">1</span><span id="hud-rank-suffix" class="rank-suffix">ST</span><span class="rank-total">/8</span>
+        </div>
+        <div id="hud-lap" class="lap-block">LAP 1/3</div>
+      </div>
+      <div class="timer-row">
+        <span id="hud-time">0:00.00</span>
+        <span id="hud-best" class="best-time">BEST --:--.--</span>
+      </div>
+      <div id="hud-landmark-badge" class="landmark-badge">
+        📍 <span id="hud-landmark-name">HAWA MAHAL • हवा महल</span>
+      </div>
+      <!-- Live Traffic Signal Indicator -->
+      <div id="hud-traffic-signal" class="traffic-signal-pill">
+        <span id="signal-dot" class="signal-dot green"></span>
+        <span id="signal-text">Next Signal: GREEN</span>
+      </div>
+      <!-- Live Standings Leaderboard -->
+      <div id="hud-leaderboard" class="hud-leaderboard"></div>
+    </div>
+
+    <!-- Top Center Event Banner -->
+    <div id="hud-event-banner" class="hud-event-banner hidden">
+      🔥 GREAT DRIFT! +100
+    </div>
+
+    <!-- Top Right Controls + Minimap + Coins -->
+    <div class="hud-top-right">
+      <div class="hud-icon-buttons">
+        <button id="btn-hud-horn" class="hud-sq-btn" title="Desi Horn (H)">📢</button>
+        <button id="btn-hud-police" class="hud-sq-btn" title="Toggle Rajasthan Police Chase (P)">🚓</button>
+        <button id="btn-hud-mute" class="hud-sq-btn" title="Mute Audio (M)">🔊</button>
+        <button id="btn-hud-pause" class="hud-sq-btn" title="Pause / Garage (ESC)">⏸</button>
+      </div>
+
+      <div class="minimap-box">
+        <canvas id="minimap-canvas" width="180" height="145"></canvas>
+      </div>
+
+      <div class="hud-coins-row">
+        <span class="coin-dot">🪙</span> <span id="hud-coins">3,250</span>
+      </div>
+      <div class="hud-throttle-row">
+        <span>SPEED</span>
+        <div class="throttle-bar"><div id="hud-throttle-fill" class="throttle-fill" style="width: 0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Center Floating Speedometer next to Vehicle -->
+    <div id="hud-speedometer" class="hud-speedometer">
+      <div id="hud-gear" class="gear-num">1</div>
+      <div id="hud-kmh" class="kmh-num">0</div>
+      <div class="kmh-unit">km/h</div>
+    </div>
+
+    <!-- Bottom Left N2O + Mobile Touch Steering -->
+    <div class="hud-bottom-left">
+      <div class="touch-steer-pad">
+        <button id="btn-touch-left" class="touch-btn" aria-label="Steer Left">◀</button>
+        <button id="btn-touch-right" class="touch-btn" aria-label="Steer Right">▶</button>
+      </div>
+      <button id="btn-nitro" class="action-orb nitro-orb">
+        <div class="orb-label">N<sub>2</sub>O</div>
+        <div class="orb-sub">50%</div>
+      </button>
+      <div class="key-hint">SPACE (COLLECT CYAN CYLINDERS)</div>
+    </div>
+
+    <!-- Bottom Center Live Vehicle Switcher (1-7) -->
+    <div class="hud-bottom-center">
+      <div class="live-vehicle-switcher" id="hud-vehicle-switcher">
+        <button class="v-pill active" data-vehicle="auto">1: Auto</button>
+        <button class="v-pill" data-vehicle="scooter">2: Activa 6G</button>
+        <button class="v-pill" data-vehicle="xpulse">3: XPulse 200</button>
+        <button class="v-pill" data-vehicle="bike">4: Classic 350</button>
+        <button class="v-pill" data-vehicle="car">5: Swift</button>
+        <button class="v-pill" data-vehicle="bus">6: JCTSL Bus</button>
+        <button class="v-pill" data-vehicle="erickshaw">7: Tirri</button>
+      </div>
+      <div class="controls-hint">
+        W / ▲ ACCELERATE • S / ▼ BRAKE • A / D STEER • SHIFT DRIFT • SPACE NITRO • OBEY RED SIGNALS!
+      </div>
+    </div>
+
+    <!-- Bottom Right Drift + Mobile Touch Gas / Brake -->
+    <div class="hud-bottom-right">
+      <div class="touch-pedal-pad">
+        <button id="btn-touch-brake" class="touch-btn pedal-brake" aria-label="Brake / Reverse">▼ BRK</button>
+        <button id="btn-touch-gas" class="touch-btn pedal-gas" aria-label="Accelerate">▲ GAS</button>
+      </div>
+      <button id="btn-drift" class="action-orb drift-orb">
+        <div class="orb-label">DRIFT</div>
+      </button>
+      <div class="key-hint">SHIFT</div>
+    </div>
+  </div>
+
+  <!-- ==================== RACE FINISH / PAUSE MODAL ==================== -->
+  <div id="results-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-ribbon">JAIPUR GRAND PRIX RESULTS</div>
+      <h2 id="results-title">🏆 1ST PLACE!</h2>
+      <p id="results-sub">Khamma Ghani! You conquered the Pink City streets!</p>
+      <div class="results-stats">
+        <div class="res-box">
+          <span class="res-label">POSITION</span>
+          <span id="res-rank" class="res-val">1ST</span>
+        </div>
+        <div class="res-box">
+          <span class="res-label">REWARD</span>
+          <span id="res-coins" class="res-val">+500 🪙</span>
+        </div>
+        <div class="res-box">
+          <span class="res-label">BEST LAP</span>
+          <span id="res-best-lap" class="res-val">0:24.18</span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-race-again" class="start-race-cta">🔄 RACE AGAIN</button>
+        <button id="btn-results-garage" class="sub-action-card">🏠 BACK TO GARAGE</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pause-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-ribbon">GAME PAUSED</div>
+      <h2>JAIPUR RUSH</h2>
+      <p>Switch vehicles anytime using keys 1–7, obey Red Traffic Lights, or play Rapperiya Baalam from YouTube!</p>
+      <div class="modal-actions">
+        <button id="btn-resume" class="start-race-cta">▶️ RESUME RACE</button>
+        <button id="btn-back-garage" class="sub-action-card">🏠 GARAGE MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>

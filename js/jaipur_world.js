@@ -672,7 +672,7 @@ export class JaipurWorld {
       const midRight = new THREE.Vector3().crossVectors(up, midTan).normalize();
       const signPos = midPt.clone().addScaledVector(midRight, halfW + 4.5);
 
-      if (!this.isTooCloseToAnyRoad(signPos.x, signPos.z, this.roadWidth * 0.5 + 8.0)) {
+      if (!this.isTooCloseToAnyRoad(signPos.x, signPos.z, this.roadWidth * 0.5 + 11.0)) {
         const signGrp = new THREE.Group();
         signGrp.position.set(signPos.x, signPos.y, signPos.z);
         signGrp.rotation.y = Math.atan2(midTan.x, midTan.z);
@@ -691,6 +691,7 @@ export class JaipurWorld {
       }
 
       // Place Jaipur Police Barricades across secondary road entrances (active in Race Mode, open in Open World!)
+      if (!this.barricadePoints) this.barricadePoints = [];
       for (const tEnd of [0.12, 0.88]) {
         const bPt = curve.getPointAt(tEnd);
         if (this.isTooCloseToAnyRoad(bPt.x, bPt.z, this.roadWidth * 0.5 + 4.0)) continue;
@@ -716,6 +717,7 @@ export class JaipurWorld {
         });
 
         this.raceBarricadeGroup.add(barGrp);
+        this.barricadePoints.push(bPt.clone());
       }
     });
 
@@ -753,18 +755,21 @@ export class JaipurWorld {
     for (let i = 0; i < 120; i++) {
       const t = i / 120;
       const s = this.getSampleAt(t);
-      if (s.point.y > 0.8) {
+      if (s.point.y > 1.2) {
         const pierGroup = new THREE.Group();
         pierGroup.position.set(s.point.x, 0, s.point.z);
         pierGroup.rotation.y = Math.atan2(s.tangent.x, s.tangent.z);
 
         const h = s.point.y;
-        const pier = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.3, h, 8), pillarMat);
-        pier.position.y = h * 0.5;
-        pierGroup.add(pier);
+        // Twin portal-frame piers outside the road edges so underpasses stay completely clear
+        [-this.roadWidth * 0.5 - 1.1, this.roadWidth * 0.5 + 1.1].forEach((px) => {
+          const pier = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.9, Math.max(0.5, h - 0.5), 8), pillarMat);
+          pier.position.set(px, (h - 0.5) * 0.5, 0);
+          pierGroup.add(pier);
+        });
 
-        const cap = new THREE.Mesh(new THREE.BoxGeometry(this.roadWidth + 1.5, 0.75, 2.2), pillarMat);
-        cap.position.y = h - 0.45;
+        const cap = new THREE.Mesh(new THREE.BoxGeometry(this.roadWidth + 2.8, 0.65, 2.0), pillarMat);
+        cap.position.y = h - 0.85;
         pierGroup.add(cap);
 
         [-this.roadWidth * 0.5 - 0.4, this.roadWidth * 0.5 + 0.4].forEach((x) => {
@@ -1295,13 +1300,13 @@ export class JaipurWorld {
       this.scene.add(tree);
     }
 
-    // Distant Aravalli Mountain Range
+    // Distant Aravalli Mountain Range (kept well outside the expanded 1.5x Jaipur loop)
     const hillMat = new THREE.MeshLambertMaterial({ color: 0x8d5b4c });
     for (let i = 0; i < 18; i++) {
       const angle = (i / 18) * Math.PI * 2;
-      const r = 780 + (i % 3) * 90;
-      const h = 85 + (i % 4) * 35;
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(115, h, 8), hillMat);
+      const r = 1220 + (i % 3) * 140;
+      const h = 110 + (i % 4) * 45;
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(145, h, 8), hillMat);
       cone.position.set(Math.cos(angle) * r, h * 0.5 - 5, Math.sin(angle) * r - 90);
       this.scene.add(cone);
     }
@@ -1319,7 +1324,9 @@ export class JaipurWorld {
       if (s.point.y > 1.0) continue;
 
       const side = i % 2 === 0 ? -1 : 1;
-      const sideOffset = this.roadWidth * 0.5 + 1.8 + (i % 3) * 0.7;
+      const sideOffset = this.roadWidth * 0.5 + 2.6 + (i % 3) * 0.7;
+      const checkPos = s.point.clone().addScaledVector(s.right, side * sideOffset);
+      if (this.isTooCloseToAnyRoad(checkPos.x, checkPos.z, this.roadWidth * 0.5 + 1.8)) continue;
 
       const pedGroup = new THREE.Group();
       const outfitMat = new THREE.MeshLambertMaterial({ color: outfitColors[i % outfitColors.length] });

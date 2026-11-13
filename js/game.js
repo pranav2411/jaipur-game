@@ -74,6 +74,11 @@ class JaipurRushGame {
     this.selectedDistrict = 'full';
     this.selectedVehicleIdx = 0; // 0 = auto
     this.totalLaps = 3;
+    this.raceCountdown = 0;
+    this.countdownGoTimer = 0;
+    this.lastCountdownStep = -1;
+    this.cameraShake = 0;
+    this.fxParticles = [];
 
     // Input state (100% Manual Throttle & Brake)
     this.keys = {
@@ -372,13 +377,31 @@ class JaipurRushGame {
 
     this.state = 'RACING';
     this.world.setRaceModeGuides(this.gameMode === 'race');
+    this.cameraShake = 0;
+    if (this.gameMode === 'race') {
+      this.raceCountdown = 3.2;
+      this.countdownGoTimer = 0;
+      this.lastCountdownStep = -1;
+    } else {
+      this.raceCountdown = 0;
+      this.countdownGoTimer = 0;
+    }
+    const wrongWayEl = document.getElementById('wrong-way-alert');
+    if (wrongWayEl) wrongWayEl.classList.add('hidden');
+    const cdEl = document.getElementById('countdown-overlay');
+    if (cdEl) cdEl.classList.add('hidden');
+
     document.getElementById('menu-screen').classList.add('hidden');
     document.getElementById('results-modal').classList.add('hidden');
     document.getElementById('pause-modal').classList.add('hidden');
     document.getElementById('hud-screen').classList.remove('hidden');
 
     this.highlightVehicleSwitcher(vKey);
-    this.showEventBanner(`🏁 ${district.name.toUpperCase()} — PRESS W / ▲ TO DRIVE!`);
+    this.showEventBanner(
+      this.gameMode === 'race'
+        ? `🏁 ${district.name.toUpperCase()} — GET READY!`
+        : `🗺️ OPEN WORLD JAIPUR — PRESS W / ▲ TO EXPLORE!`
+    );
     this.sound.triggerStreetVoice(0);
   }
 
@@ -477,7 +500,89 @@ class JaipurRushGame {
     this.showEventBanner(`🚨 CHALLAN ISSUED: ${title} (-${fineCoins} COINS)`);
   }
 
+  spawnFxParticle(pos, colorHex, scale = 0.45, vy = 1.6, life = 0.42) {
+    if (this.fxParticles.length > 48) return;
+    const mat = new THREE.MeshBasicMaterial({
+      color: colorHex,
+      transparent: true,
+      opacity: 0.72
+    });
+    const mesh = new THREE.Mesh(new THREE.DodecahedronGeometry(scale, 0), mat);
+    mesh.position.copy(pos);
+    this.scene.add(mesh);
+    this.fxParticles.push({
+      mesh,
+      vy,
+      vx: (Math.random() - 0.5) * 2.2,
+      vz: (Math.random() - 0.5) * 2.2,
+      life,
+      maxLife: life
+    });
+  }
+
+  updateFxParticles(dt) {
+    for (let i = this.fxParticles.length - 1; i >= 0; i--) {
+      const p = this.fxParticles[i];
+      p.life -= dt;
+      if (p.life <= 0) {
+        this.scene.remove(p.mesh);
+        p.mesh.geometry.dispose();
+        p.mesh.material.dispose();
+        this.fxParticles.splice(i, 1);
+        continue;
+      }
+      p.mesh.position.x += p.vx * dt;
+      p.mesh.position.y += p.vy * dt;
+      p.mesh.position.z += p.vz * dt;
+      const ratio = p.life / p.maxLife;
+      p.mesh.material.opacity = ratio * 0.72;
+      const grow = 1 + (1 - ratio) * 1.4;
+      p.mesh.scale.setScalar(grow);
+    }
+  }
+
   updatePhysics(dt) {
+    this.updateFxParticles(dt);
+
+    // 3 - 2 - 1 - CHALO! Race Start Countdown
+    const cdEl = document.getElementById('countdown-overlay');
+    if (this.raceCountdown > 0) {
+      this.raceCountdown -= dt;
+      const step = Math.ceil(this.raceCountdown);
+      if (step >= 1 && step <= 3 && cdEl) {
+        cdEl.classList.remove('hidden', 'go');
+        cdEl.textContent = String(step);
+        if (this.lastCountdownStep !== step) {
+          this.lastCountdownStep = step;
+          cdEl.style.animation = 'none';
+          void cdEl.offsetWidth;
+          cdEl.style.animation = '';
+          this.sound.playSynthNote(520 + (3 - step) * 110, 0.12, 'triangle', 0.12);
+        }
+      }
+      if (this.raceCountdown <= 0) {
+        this.raceCountdown = 0;
+        this.countdownGoTimer = 0.85;
+        this.player.lapStartTime = performance.now();
+        if (cdEl) {
+          cdEl.classList.remove('hidden');
+          cdEl.classList.add('go');
+          cdEl.textContent = 'CHALO! 🏁';
+        }
+        this.sound.playSynthNote(880, 0.25, 'triangle', 0.14);
+        this.showEventBanner('🏁 RACE STARTED! FULL THROTTLE!');
+      } else {
+        this.updateAIRacers(dt, JAIPUR_DISTRICTS[this.selectedDistrict]?.startT || 0);
+        return;
+      }
+    } else if (this.countdownGoTimer > 0) {
+      this.countdownGoTimer -= dt;
+      if (this.countdownGoTimer <= 0 && cdEl) {
+        cdEl.classList.add('hidden');
+        cdEl.classList.remove('go');
+      }
+    }
+
     const stats = this.getPlayerEffectiveStats();
     const isThrottle = this.keys.up;
     const isBraking = this.keys.down;
@@ -498,8 +603,9 @@ class JaipurRushGame {
       }
     }
 
-    // Dynamic Camera FOV Warp + Twin Exhaust Flames during Nitro
-    const targetFov = this.player.boosting ? 74 : 60;
+    // Dynamic Camera FOV Warp (speed + Nitro) + Twin Exhaust Flames during Nitro
+    const speedRatio = Math.min(1, Math.abs(this.player.speed) / 55);
+    const targetFov = this.player.boosting ? 76 : 60 + speedRatio * 8;
     if (Math.abs(this.camera.fov - targetFov) > 0.1) {
       this.camera.fov += (targetFov - this.camera.fov) * Math.min(1, dt * 8);
       this.camera.updateProjectionMatrix();
@@ -546,8 +652,12 @@ class JaipurRushGame {
 
     this.player.drifting =
       this.keys.drift && Math.abs(steerInput) > 0 && this.player.speed > 12;
+    const highSpeedTaper = this.player.drifting
+      ? 1.0
+      : 1.0 - Math.min(0.32, Math.max(0, Math.abs(this.player.speed) - 22) * 0.009);
     const turnRate =
       stats.handling *
+      highSpeedTaper *
       (this.player.drifting ? 1.38 : 1.0) *
       Math.min(1, Math.abs(this.player.speed) / 8);
 
@@ -561,6 +671,19 @@ class JaipurRushGame {
 
     if (this.player.drifting) {
       this.driftMeters += Math.abs(this.player.speed) * dt * 0.8;
+      if (Math.random() < 0.45) {
+        const rearPos = this.player.pos.clone();
+        rearPos.x -= Math.sin(this.player.heading) * 1.6;
+        rearPos.z -= Math.cos(this.player.heading) * 1.6;
+        rearPos.y += 0.28;
+        this.spawnFxParticle(rearPos, 0xd1d5db, 0.36, 1.2, 0.35);
+      }
+    } else if (this.player.boosting && Math.random() < 0.4) {
+      const rearPos = this.player.pos.clone();
+      rearPos.x -= Math.sin(this.player.heading) * 1.8;
+      rearPos.z -= Math.cos(this.player.heading) * 1.8;
+      rearPos.y += 0.35;
+      this.spawnFxParticle(rearPos, 0x00f5d4, 0.26, 0.8, 0.25);
     }
 
     // Advance player position
@@ -603,6 +726,30 @@ class JaipurRushGame {
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
         this.player.heading += diff * 0.3;
+      }
+
+      // Physical Police Barricade collision in Race Mode
+      if (this.world.barricadePoints) {
+        for (const bp of this.world.barricadePoints) {
+          const bdx = this.player.pos.x - bp.x;
+          const bdz = this.player.pos.z - bp.z;
+          if (bdx * bdx + bdz * bdz < 38.0) {
+            this.player.speed = -8;
+            this.cameraShake = 0.45;
+            this.sound.playCrash();
+            this.showEventBanner('⛔ POLICE BARRICADE — STAY ON RACE ROUTE!');
+            break;
+          }
+        }
+      }
+
+      // Wrong-Way detection
+      const fwdX = Math.sin(this.player.heading);
+      const fwdZ = Math.cos(this.player.heading);
+      const dot = fwdX * trackInfo.sample.tangent.x + fwdZ * trackInfo.sample.tangent.z;
+      const wrongWayEl = document.getElementById('wrong-way-alert');
+      if (wrongWayEl) {
+        wrongWayEl.classList.toggle('hidden', !(dot < -0.35 && this.player.speed > 5));
       }
     }
 
@@ -819,8 +966,8 @@ class JaipurRushGame {
       if (progressDiff > 0.08) rubberBand = 1.12;
       else if (progressDiff < -0.08) rubberBand = 0.90;
 
-      const targetSpd = stopForRed ? 2.5 : ai.baseSpeed * rubberBand;
-      ai.speed += (targetSpd - ai.speed) * Math.min(1, dt * 3.0);
+      const targetSpd = this.raceCountdown > 0 ? 0 : stopForRed ? 2.5 : ai.baseSpeed * rubberBand;
+      ai.speed = this.raceCountdown > 0 ? 0 : ai.speed + (targetSpd - ai.speed) * Math.min(1, dt * 3.0);
 
       const prevT = ai.trackT;
       ai.trackT = (ai.trackT + (ai.speed * dt) / this.world.trackLength) % 1;
@@ -1012,13 +1159,21 @@ class JaipurRushGame {
     const distBack = (isBus ? 11.5 : 8.2) + (this.player.boosting ? 1.5 : 0);
     const heightUp = isBus ? 4.8 : 3.5;
 
+    // Subtle drift camera lag so the player sees the apex + impact camera shake
+    const camAngle = this.player.heading + this.player.driftAngle * 0.45;
     const targetCamPos = new THREE.Vector3(
-      this.player.pos.x - Math.sin(this.player.heading) * distBack,
+      this.player.pos.x - Math.sin(camAngle) * distBack,
       this.player.pos.y + heightUp,
-      this.player.pos.z - Math.cos(this.player.heading) * distBack
+      this.player.pos.z - Math.cos(camAngle) * distBack
     );
 
     this.camera.position.lerp(targetCamPos, Math.min(1, dt * 10));
+
+    if (this.cameraShake > 0) {
+      this.camera.position.x += (Math.random() - 0.5) * this.cameraShake;
+      this.camera.position.y += (Math.random() - 0.5) * this.cameraShake * 0.6;
+      this.cameraShake = Math.max(0, this.cameraShake - dt * 2.4);
+    }
 
     const lookAtPos = new THREE.Vector3(
       this.player.pos.x + Math.sin(this.player.heading) * 6,
@@ -1198,23 +1353,45 @@ class JaipurRushGame {
       ctx.fill();
     }
 
-    // Player Dot
+    // Player Directional Arrow
+    const px = mapX(this.player.pos.x);
+    const pz = mapZ(this.player.pos.z);
+    ctx.save();
+    ctx.translate(px, pz);
+    ctx.rotate(-this.player.heading + Math.PI);
     ctx.fillStyle = '#10b981';
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.arc(mapX(this.player.pos.x), mapZ(this.player.pos.z), 5.2, 0, Math.PI * 2);
+    ctx.moveTo(0, -7);
+    ctx.lineTo(5.5, 5.5);
+    ctx.lineTo(0, 2.5);
+    ctx.lineTo(-5.5, 5.5);
+    ctx.closePath();
     ctx.fill();
     ctx.stroke();
+    ctx.restore();
 
-    // Major Jaipur Area Labels
-    ctx.fillStyle = '#1e293b';
-    ctx.font = 'bold 7px sans-serif';
-    ctx.fillText('HAWA MAHAL', mapX(0) - 24, mapZ(55));
-    ctx.fillText('VAISHALI FLYOVER', mapX(295) - 38, mapZ(60));
-    ctx.fillText('MANSAROVAR', mapX(170) - 25, mapZ(-285));
-    ctx.fillText('MALVIYA / WTP', mapX(-140) - 26, mapZ(-295));
-    ctx.fillText('AMBER / FORTS', mapX(-230) - 24, mapZ(80));
+    // Clean, non-overlapping Jaipur Area Labels
+    const labels = [
+      { text: 'HAWA MAHAL', x: mapX(0), y: mapZ(68) },
+      { text: 'VAISHALI', x: mapX(315), y: mapZ(60) },
+      { text: 'MANSAROVAR', x: mapX(210), y: mapZ(-295) },
+      { text: 'MALVIYA / WTP', x: mapX(-180), y: mapZ(-295) },
+      { text: 'AMBER FORT', x: mapX(-260), y: mapZ(80) }
+    ];
+    ctx.font = 'bold 7.5px sans-serif';
+    ctx.textAlign = 'center';
+    for (const lb of labels) {
+      const lx = Math.max(32, Math.min(w - 32, lb.x));
+      const ly = Math.max(12, Math.min(h - 8, lb.y));
+      const tw = ctx.measureText(lb.text).width + 6;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+      ctx.fillRect(lx - tw * 0.5, ly - 8, tw, 11);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText(lb.text, lx, ly);
+    }
+    ctx.textAlign = 'left';
   }
 
   updateMenuUI() {

@@ -322,6 +322,10 @@ export class JaipurWorld {
     this.pedestrians = [];
     this.trafficLights = [];
     this.waterMesh = null;
+    this.raceBarricadeGroup = new THREE.Group();
+    this.routeGuideGroup = new THREE.Group();
+    this.scene.add(this.raceBarricadeGroup);
+    this.scene.add(this.routeGuideGroup);
 
     this.asphaltTex = createAsphaltTexture();
     this.pinkFacadeTex = createJaipurFacadeTexture('#d96b55', '#fff2e2');
@@ -662,13 +666,13 @@ export class JaipurWorld {
       geo.computeVertexNormals();
       this.scene.add(new THREE.Mesh(geo, secRoadMat));
 
-      // Place green Jaipur JDA street signboard cleanly on the outer sidewalk (never on any road!)
-      const midPt = curve.getPointAt(0.5);
-      const midTan = curve.getTangentAt(0.5).normalize();
+      // Place green Jaipur JDA street signboard cleanly on the outer sidewalk (never near main road!)
+      const midPt = curve.getPointAt(0.55);
+      const midTan = curve.getTangentAt(0.55).normalize();
       const midRight = new THREE.Vector3().crossVectors(up, midTan).normalize();
-      const signPos = midPt.clone().addScaledVector(midRight, halfW + 3.5);
+      const signPos = midPt.clone().addScaledVector(midRight, halfW + 4.5);
 
-      if (!this.isTooCloseToAnyRoad(signPos.x, signPos.z, this.roadWidth * 0.5 + 3.5)) {
+      if (!this.isTooCloseToAnyRoad(signPos.x, signPos.z, this.roadWidth * 0.5 + 8.0)) {
         const signGrp = new THREE.Group();
         signGrp.position.set(signPos.x, signPos.y, signPos.z);
         signGrp.rotation.y = Math.atan2(midTan.x, midTan.z);
@@ -685,7 +689,61 @@ export class JaipurWorld {
         signGrp.add(board);
         this.scene.add(signGrp);
       }
+
+      // Place Jaipur Police Barricades across secondary road entrances (active in Race Mode, open in Open World!)
+      for (const tEnd of [0.12, 0.88]) {
+        const bPt = curve.getPointAt(tEnd);
+        if (this.isTooCloseToAnyRoad(bPt.x, bPt.z, this.roadWidth * 0.5 + 4.0)) continue;
+
+        const bTan = curve.getTangentAt(tEnd).normalize();
+        const barGrp = new THREE.Group();
+        barGrp.position.set(bPt.x, bPt.y, bPt.z);
+        barGrp.rotation.y = Math.atan2(bTan.x, bTan.z);
+
+        const barTex = createSignTexture('⛔ JAIPUR POLICE BARRICADE', 'RACE ROUTE STRAIGHT • NO ENTRY', '#b91c1c', '#fef08a');
+        const barBoard = new THREE.Mesh(
+          new THREE.BoxGeometry(12.5, 1.35, 0.35),
+          new THREE.MeshBasicMaterial({ map: barTex })
+        );
+        barBoard.position.y = 1.25;
+        barGrp.add(barBoard);
+
+        const legMat = new THREE.MeshLambertMaterial({ color: 0xfacc15 });
+        [-5.2, 0, 5.2].forEach((lx) => {
+          const leg = new THREE.Mesh(new THREE.BoxGeometry(0.28, 1.3, 0.7), legMat);
+          leg.position.set(lx, 0.65, 0);
+          barGrp.add(leg);
+        });
+
+        this.raceBarricadeGroup.add(barGrp);
+      }
     });
+
+    // Add 36 glowing directional chevrons (>>>) along the main race loop so the race road is 100% obvious!
+    const chevronMat = new THREE.MeshBasicMaterial({
+      color: 0x00f5d4,
+      transparent: true,
+      opacity: 0.72,
+      side: THREE.DoubleSide
+    });
+    for (let i = 0; i < 36; i++) {
+      const t = i / 36;
+      const s = this.getSampleAt(t);
+      const chev = new THREE.Mesh(new THREE.ConeGeometry(1.3, 2.2, 3), chevronMat);
+      chev.rotation.x = Math.PI / 2;
+      chev.rotation.z = Math.PI;
+      const grp = new THREE.Group();
+      grp.position.set(s.point.x, s.point.y + 0.28, s.point.z);
+      grp.rotation.y = Math.atan2(s.tangent.x, s.tangent.z);
+      chev.rotation.set(Math.PI / 2, 0, 0);
+      grp.add(chev);
+      this.routeGuideGroup.add(grp);
+    }
+  }
+
+  setRaceModeGuides(isRace) {
+    if (this.raceBarricadeGroup) this.raceBarricadeGroup.visible = isRace;
+    if (this.routeGuideGroup) this.routeGuideGroup.visible = isRace;
   }
 
   buildFlyoverSupportsAndGantries() {

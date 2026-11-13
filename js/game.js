@@ -370,6 +370,7 @@ class JaipurRushGame {
     this.police.mesh.visible = true;
 
     this.state = 'RACING';
+    this.world.setRaceModeGuides(this.gameMode === 'race');
     document.getElementById('menu-screen').classList.add('hidden');
     document.getElementById('results-modal').classList.add('hidden');
     document.getElementById('pause-modal').classList.add('hidden');

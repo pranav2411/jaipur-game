@@ -50,7 +50,7 @@ class JaipurRushGame {
       60,
       window.innerWidth / window.innerHeight,
       0.5,
-      1000
+      1500
     );
 
     this.sound = new SoundManager();
@@ -350,9 +350,10 @@ class JaipurRushGame {
     this.player.boosting = false;
     this.player.boostTimer = 0;
     this.player.lap = 1;
+    this.player.checkpointMask = 0;
     this.player.trackT = startT;
     this.player.lastTrackT = startT;
-    this.player.totalProgress = startT;
+    this.player.totalProgress = 0;
     this.player.CrashCount = 0;
     this.player.lapStartTime = performance.now();
 
@@ -613,10 +614,16 @@ class JaipurRushGame {
     const prevRel = (this.player.lastTrackT - startT + 1) % 1;
     const currRel = (this.player.trackT - startT + 1) % 1;
 
-    if (prevRel > 0.88 && currRel < 0.12 && this.player.speed > 0) {
+    // Sequential 3-sector checkpoint validation (prevents reverse-over-start-line fake laps!)
+    if (currRel >= 0.22 && currRel <= 0.35) this.player.checkpointMask |= 1;
+    if ((this.player.checkpointMask & 1) && currRel >= 0.45 && currRel <= 0.62) this.player.checkpointMask |= 2;
+    if ((this.player.checkpointMask & 2) && currRel >= 0.70 && currRel <= 0.88) this.player.checkpointMask |= 4;
+
+    if (prevRel > 0.88 && currRel < 0.12 && this.player.speed > 0 && this.player.checkpointMask === 7) {
       const now = performance.now();
       const lapTime = (now - this.player.lapStartTime) / 1000;
       this.player.lapStartTime = now;
+      this.player.checkpointMask = 0;
 
       if (!this.player.bestLapTime || lapTime < this.player.bestLapTime) {
         this.player.bestLapTime = lapTime;
@@ -633,7 +640,8 @@ class JaipurRushGame {
       }
     }
 
-    this.player.totalProgress = this.player.lap - 1 + currRel;
+    const effectiveRel = currRel > 0.88 && this.player.checkpointMask === 0 ? 0 : currRel;
+    this.player.totalProgress = this.player.lap - 1 + effectiveRel;
 
     const zone = this.world.getLandmarkAt(this.player.trackT);
     if (zone && !this.visitedLandmarks.has(zone.id)) {
@@ -1137,8 +1145,8 @@ class JaipurRushGame {
       ctx.fillRect(0, 0, w, h);
     }
 
-    const mapX = (x) => w * 0.5 + x * 0.22;
-    const mapZ = (z) => h * 0.56 + z * 0.22;
+    const mapX = (x) => w * 0.5 + x * 0.148;
+    const mapZ = (z) => h * 0.56 + z * 0.148;
 
     // Secondary Jaipur City Roads (MI Road, Tonk Road, JLN Marg, Queens Road, etc.)
     ctx.strokeStyle = '#64748b';

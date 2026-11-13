@@ -58,51 +58,51 @@ export const LANDMARK_ZONES = [
 export const JAIPUR_SECONDARY_ROADS = [
   {
     name: 'Johari Bazaar & Bapu Bazaar',
-    pts: [[0, 0, -60], [65, 0, -55], [140, 0, -45], [220, 0, -35]]
+    pts: [[0, 0, -90], [98, 0, -82], [210, 0, -68], [330, 0, -52]]
   },
   {
     name: 'Tripolia Bazaar to Choti Chaupar & Chandpole',
-    pts: [[0, 0, 20], [-75, 0, 22], [-155, 0, 25], [-240, 0, 30]]
+    pts: [[0, 0, 30], [-112, 0, 33], [-232, 0, 38], [-360, 0, 45]]
   },
   {
     name: 'MI Road (Mirza Ismail Road) Central Spine',
-    pts: [[120, 0, 215], [45, 0, 145], [-30, 0, 80], [-110, 0, 10], [-195, 0, -60]]
+    pts: [[180, 0, 322], [68, 0, 218], [-45, 0, 120], [-165, 0, 15], [-292, 0, -90]]
   },
   {
     name: 'Sikar Road & Shastri Nagar Cross Avenue',
-    pts: [[225, 0, 195], [295, 0, 275], [380, 0, 355]]
+    pts: [[338, 0, 292], [442, 0, 412], [570, 0, 532]]
   },
   {
     name: 'Queens Road & Amrapali Marg (Vaishali Nagar)',
-    pts: [[310, 0, 110], [410, 0, 110], [510, 0, 115]]
+    pts: [[465, 0, 165], [615, 0, 165], [765, 0, 172]]
   },
   {
     name: 'Ajmer Road NH-48 Highway West',
-    pts: [[330, 0, -10], [435, 0, -25], [540, 0, -45]]
+    pts: [[495, 0, -15], [652, 0, -38], [810, 0, -68]]
   },
   {
     name: 'Mansarovar Madhyam Marg & New Sanganer Road',
-    pts: [[230, 0, -255], [240, 0, -370], [250, 0, -480]]
+    pts: [[345, 0, -382], [360, 0, -555], [375, 0, -720]]
   },
   {
     name: 'Tonk Road North-South Arterial Spine',
-    pts: [[115, 0, -315], [105, 0, -160], [95, 0, 0], [110, 0, 140], [120, 0, 215]]
+    pts: [[172, 0, -472], [158, 0, -240], [142, 0, 0], [165, 0, 210], [180, 0, 322]]
   },
   {
     name: 'JLN Marg (Albert Hall → Birla Mandir → RU → WTP → Jawahar Circle)',
-    pts: [[38, 0, 165], [10, 0, 10], [-25, 0, -145], [-65, 0, -305], [-140, 0, -295]]
+    pts: [[57, 0, 248], [15, 0, 15], [-38, 0, -218], [-98, 0, -458], [-210, 0, -442]]
   },
   {
     name: 'Malviya Nagar to Jagatpura Flyover Road',
-    pts: [[-140, 0, -295], [-160, 0, -410], [-185, 0, -510]]
+    pts: [[-210, 0, -442], [-240, 0, -615], [-278, 0, -765]]
   },
   {
     name: 'Nahargarh & Jaigarh Fort Ghat Hill Road',
-    pts: [[-275, 0, -75], [-335, 6, -55], [-395, 16, -35]]
+    pts: [[-412, 0, -112], [-502, 6, -82], [-592, 16, -52]]
   },
   {
     name: 'Amer Fort Foothill Darshani Gate Road',
-    pts: [[-230, 0, 55], [-295, 6, 105], [-355, 16, 165]]
+    pts: [[-345, 0, 82], [-442, 6, 158], [-532, 16, 248]]
   }
 ];
 
@@ -367,7 +367,7 @@ export class JaipurWorld {
     sun.shadow.camera.bottom = -d;
     this.scene.add(sun);
 
-    const groundGeo = new THREE.PlaneGeometry(2400, 2400);
+    const groundGeo = new THREE.PlaneGeometry(3600, 3600);
     const groundMat = new THREE.MeshLambertMaterial({
       map: createJaipurGroundMapTexture()
     });
@@ -455,24 +455,24 @@ export class JaipurWorld {
 
   buildTrackCurve() {
     const pts = [
-      new THREE.Vector3(0, 0, -60),       // Start: Badi Chaupar / Hawa Mahal
-      new THREE.Vector3(0, 0, 75),        // Hawa Mahal straight
-      new THREE.Vector3(38, 0, 165),      // Johari Bazaar
-      new THREE.Vector3(120, 0, 215),     // Ajmeri Gate & MI Road
-      new THREE.Vector3(225, 0, 195),     // Shastri Nagar Approach
-      new THREE.Vector3(310, 5.5, 110),   // Vaishali Nagar Elevated Flyover Deck
-      new THREE.Vector3(330, 5.5, -10),   // Vaishali Nagar Flyover Descent
-      new THREE.Vector3(285, 0, -135),    // Collectorate / Sodala Circle
-      new THREE.Vector3(230, 5.2, -255),  // Mansarovar / Gopalpura Elevated Flyover
-      new THREE.Vector3(115, 5.2, -315),  // Mansarovar Metro Corridor
-      new THREE.Vector3(-15, 0, -320),    // Malviya Nagar & WTP Approach
-      new THREE.Vector3(-140, 0, -295),   // World Trade Park (WTP)
-      new THREE.Vector3(-250, 0, -205),   // Jawahar Circle & Patrika Gate
-      new THREE.Vector3(-275, 0, -75),    // Nahargarh & Jaigarh Foothill Curve
-      new THREE.Vector3(-230, 0, 55),     // Amber Fort Highway
-      new THREE.Vector3(-135, 0, 95),     // Jal Mahal Causeway (Man Sagar Lake)
-      new THREE.Vector3(-48, 0, 35),      // Choti Chaupar Return
-      new THREE.Vector3(0, 0, -120)       // Approach back to Badi Chaupar
+      new THREE.Vector3(0, 0, -90),       // Start: Badi Chaupar / Hawa Mahal
+      new THREE.Vector3(0, 0, 112),       // Hawa Mahal straight
+      new THREE.Vector3(57, 0, 248),      // Johari Bazaar
+      new THREE.Vector3(180, 0, 322),     // Ajmeri Gate & MI Road
+      new THREE.Vector3(338, 0, 292),     // Shastri Nagar Approach
+      new THREE.Vector3(465, 6.2, 165),   // Vaishali Nagar Elevated Flyover Deck
+      new THREE.Vector3(495, 6.2, -15),   // Vaishali Nagar Flyover Descent
+      new THREE.Vector3(428, 0, -202),    // Collectorate / Sodala Circle
+      new THREE.Vector3(345, 5.8, -382),  // Mansarovar / Gopalpura Elevated Flyover
+      new THREE.Vector3(172, 5.8, -472),  // Mansarovar Metro Corridor
+      new THREE.Vector3(-22, 0, -480),    // Malviya Nagar & WTP Approach
+      new THREE.Vector3(-210, 0, -442),   // World Trade Park (WTP)
+      new THREE.Vector3(-375, 0, -308),   // Jawahar Circle & Patrika Gate
+      new THREE.Vector3(-412, 0, -112),   // Nahargarh & Jaigarh Foothill Curve
+      new THREE.Vector3(-345, 0, 82),     // Amber Fort Highway
+      new THREE.Vector3(-202, 0, 142),    // Jal Mahal Causeway (Man Sagar Lake)
+      new THREE.Vector3(-72, 0, 52),      // Choti Chaupar Return
+      new THREE.Vector3(0, 0, -180)       // Approach back to Badi Chaupar
     ];
 
     this.curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.45);
@@ -928,28 +928,28 @@ export class JaipurWorld {
       {
         name: 'AMBER FORT • आमेर किला',
         sub: 'AMER PALACE & MAOTA LAKE',
-        pos: new THREE.Vector3(-365, 0, 175),
+        pos: new THREE.Vector3(-548, 0, 262),
         rotY: 0.75,
-        hillRadius: 58,
-        hillHeight: 34,
+        hillRadius: 72,
+        hillHeight: 42,
         color: '#b85d19'
       },
       {
         name: 'JAIGARH FORT • जयगढ़ किला',
         sub: 'JAIVANA CANNON • VICTORY FORT',
-        pos: new THREE.Vector3(-415, 0, -35),
+        pos: new THREE.Vector3(-622, 0, -52),
         rotY: 1.35,
-        hillRadius: 62,
-        hillHeight: 44,
+        hillRadius: 78,
+        hillHeight: 52,
         color: '#a14227'
       },
       {
         name: 'NAHARGARH FORT • नाहरगढ़ किला',
         sub: 'TIGER FORT OVERLOOKING PINK CITY',
-        pos: new THREE.Vector3(-290, 0, 265),
+        pos: new THREE.Vector3(-435, 0, 398),
         rotY: -0.35,
-        hillRadius: 56,
-        hillHeight: 38,
+        hillRadius: 68,
+        hillHeight: 46,
         color: '#c94a38'
       }
     ];
@@ -1299,10 +1299,10 @@ export class JaipurWorld {
     const hillMat = new THREE.MeshLambertMaterial({ color: 0x8d5b4c });
     for (let i = 0; i < 18; i++) {
       const angle = (i / 18) * Math.PI * 2;
-      const r = 520 + (i % 3) * 65;
-      const h = 65 + (i % 4) * 28;
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(85, h, 8), hillMat);
-      cone.position.set(Math.cos(angle) * r, h * 0.5 - 5, Math.sin(angle) * r - 70);
+      const r = 780 + (i % 3) * 90;
+      const h = 85 + (i % 4) * 35;
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(115, h, 8), hillMat);
+      cone.position.set(Math.cos(angle) * r, h * 0.5 - 5, Math.sin(angle) * r - 90);
       this.scene.add(cone);
     }
   }

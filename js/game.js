@@ -304,10 +304,18 @@ class JaipurRushGame {
       const mesh = createVehicleMesh(cfg.vehicle, cfg.tint);
       this.scene.add(mesh);
 
-      const offsetT = (startT + 0.012 * (idx + 1)) % 1;
-      const laneOffset = ((idx % 3) - 1) * 3.8;
+      // Tight 2-wide Grand Prix starting grid right at the start line so all 8 racers start together!
+      const row = Math.floor(idx / 2);
+      const col = idx % 2 === 0 ? -1 : 1;
+      const offsetT = (startT + 0.0022 * (row + 1)) % 1;
+      const laneOffset = col * 3.4;
       const spec = VEHICLE_CATALOG[cfg.vehicle] || VEHICLE_CATALOG.auto;
       const s = this.world.getSampleAt(offsetT);
+      const pos = s.point.clone().addScaledVector(s.right, laneOffset);
+      const heading = Math.atan2(s.tangent.x, s.tangent.z);
+
+      mesh.position.copy(pos);
+      mesh.rotation.y = heading;
 
       this.aiRacers.push({
         name: cfg.name,
@@ -315,14 +323,14 @@ class JaipurRushGame {
         mesh,
         trackT: offsetT,
         lap: 1,
-        totalProgress: offsetT,
+        totalProgress: (offsetT - startT + 1) % 1,
         laneOffset,
         targetLane: laneOffset,
         laneTimer: 2 + Math.random() * 4,
-        speed: spec.topSpeed * (0.76 + Math.random() * 0.16),
+        speed: 0,
         baseSpeed: spec.topSpeed * (0.80 + (idx % 4) * 0.045),
-        pos: s.point.clone().addScaledVector(s.right, laneOffset),
-        heading: Math.atan2(s.tangent.x, s.tangent.z),
+        pos,
+        heading,
         hitCooldown: 0,
         damageTimer: 0,
         damageTilt: 0

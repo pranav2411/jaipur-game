@@ -79,6 +79,12 @@ class JaipurRushGame {
     this.lastCountdownStep = -1;
     this.cameraShake = 0;
     this.fxParticles = [];
+    this.introActive = false;
+    this.introTimer = 0;
+    this.introDuration = 5.5;
+    this.crashCamTimer = 0;
+    this.crashCamCooldown = 0;
+    this.crashFocusPos = new THREE.Vector3();
 
     // Input state (100% Manual Throttle & Brake)
     this.keys = {
@@ -378,14 +384,10 @@ class JaipurRushGame {
     this.state = 'RACING';
     this.world.setRaceModeGuides(this.gameMode === 'race');
     this.cameraShake = 0;
-    if (this.gameMode === 'race') {
-      this.raceCountdown = 3.2;
-      this.countdownGoTimer = 0;
-      this.lastCountdownStep = -1;
-    } else {
-      this.raceCountdown = 0;
-      this.countdownGoTimer = 0;
-    }
+    this.crashCamTimer = 0;
+    this.crashCamCooldown = 0;
+    const crashVigEl = document.getElementById('crash-vignette');
+    if (crashVigEl) crashVigEl.classList.add('hidden');
     const wrongWayEl = document.getElementById('wrong-way-alert');
     if (wrongWayEl) wrongWayEl.classList.add('hidden');
     const cdEl = document.getElementById('countdown-overlay');
@@ -394,15 +396,55 @@ class JaipurRushGame {
     document.getElementById('menu-screen').classList.add('hidden');
     document.getElementById('results-modal').classList.add('hidden');
     document.getElementById('pause-modal').classList.add('hidden');
-    document.getElementById('hud-screen').classList.remove('hidden');
+
+    if (this.gameMode === 'race') {
+      this.introActive = true;
+      this.introTimer = this.introDuration;
+      this.raceCountdown = 3.2;
+      this.countdownGoTimer = 0;
+      this.lastCountdownStep = -1;
+
+      const spec = VEHICLE_CATALOG[vKey];
+      const introTitle = document.getElementById('intro-title');
+      const introSub = document.getElementById('intro-sub');
+      if (introTitle) introTitle.textContent = district.name.toUpperCase();
+      if (introSub) introSub.textContent = `Starting Grid: ${spec.name} • Obey Red Signals & Beat 7 Racers`;
+      document.getElementById('hud-screen').classList.add('hidden');
+      document.getElementById('intro-overlay').classList.remove('hidden');
+    } else {
+      this.introActive = false;
+      this.introTimer = 0;
+      this.raceCountdown = 0;
+      this.countdownGoTimer = 0;
+      document.getElementById('intro-overlay').classList.add('hidden');
+      document.getElementById('hud-screen').classList.remove('hidden');
+    }
 
     this.highlightVehicleSwitcher(vKey);
     this.showEventBanner(
       this.gameMode === 'race'
-        ? `🏁 ${district.name.toUpperCase()} — GET READY!`
+        ? `🎬 ${district.name.toUpperCase()} — INTRO FLYOVER`
         : `🗺️ OPEN WORLD JAIPUR — PRESS W / ▲ TO EXPLORE!`
     );
     this.sound.triggerStreetVoice(0);
+  }
+
+  skipIntro() {
+    if (!this.introActive) return;
+    this.introActive = false;
+    this.introTimer = 0;
+    document.getElementById('intro-overlay').classList.add('hidden');
+    document.getElementById('hud-screen').classList.remove('hidden');
+    this.showEventBanner('🏁 GET READY — 3, 2, 1...');
+  }
+
+  triggerCrashCam(impactPos) {
+    if (this.crashCamCooldown > 0 || this.introActive) return;
+    this.crashCamTimer = 1.35;
+    this.crashCamCooldown = 4.5;
+    this.crashFocusPos.copy(impactPos);
+    const vig = document.getElementById('crash-vignette');
+    if (vig) vig.classList.remove('hidden');
   }
 
   returnToMenu() {
@@ -543,6 +585,22 @@ class JaipurRushGame {
 
   updatePhysics(dt) {
     this.updateFxParticles(dt);
+
+    if (this.crashCamCooldown > 0) this.crashCamCooldown -= dt;
+
+    // Cinematic Pre-Race Intro Flyover
+    if (this.introActive) {
+      this.introTimer -= dt;
+      if (this.introTimer <= 0) {
+        this.skipIntro();
+      }
+      return;
+    }
+
+    // Brake / Reverse Tail-light glow
+    if (this.player.mesh && this.player.mesh.userData && this.player.mesh.userData.tailMat) {
+      this.player.mesh.userData.tailMat.color.setHex(this.keys.down ? 0xff4d4d : 0x8f0d18);
+    }
 
     // 3 - 2 - 1 - CHALO! Race Start Countdown
     const cdEl = document.getElementById('countdown-overlay');
@@ -696,7 +754,9 @@ class JaipurRushGame {
 
     if (this.gameMode === 'roam') {
       // TRUE OPEN WORLD MODE: Drive freely across all 12 Jaipur avenues, bazaars & forts!
-      const onMainDeck = trackInfo.distance < roadHalfW + 1.5;
+      const onMainDeck =
+        trackInfo.distance < roadHalfW + 1.5 &&
+        (trackInfo.sample.point.y < 1.2 || Math.abs(this.player.pos.y - trackInfo.sample.point.y) < 3.2);
       const targetY = onMainDeck ? trackInfo.sample.point.y : 0;
       this.player.pos.y += (targetY - this.player.pos.y) * Math.min(1, dt * 10);
       this.player.offRoad = false;
@@ -734,8 +794,11 @@ class JaipurRushGame {
           const bdx = this.player.pos.x - bp.x;
           const bdz = this.player.pos.z - bp.z;
           if (bdx * bdx + bdz * bdz < 38.0) {
+            const wasFast = Math.abs(this.player.speed) > 15;
             this.player.speed = -8;
-            this.cameraShake = 0.45;
+            this.cameraShake = 0.55;
+            this.spawnCrashBurst(bp);
+            if (wasFast) this.triggerCrashCam(bp);
             this.sound.playCrash();
             this.showEventBanner('⛔ POLICE BARRICADE — STAY ON RACE ROUTE!');
             break;
@@ -1006,6 +1069,10 @@ class JaipurRushGame {
         // Spawn 3D flying sparks & debris right at the collision point!
         const impactPoint = this.player.pos.clone().lerp(ai.pos, 0.5);
         this.spawnCrashBurst(impactPoint);
+        this.cameraShake = 0.48;
+        if (Math.abs(this.player.speed) > 16) {
+          this.triggerCrashCam(impactPoint);
+        }
         this.sound.playCrash();
 
         // Apply physical knockback, speed loss, tilt jolt, and 4.5s of billowing engine smoke to the hit AI vehicle!
@@ -1152,6 +1219,57 @@ class JaipurRushGame {
         this.player.pos.y + 1.2,
         this.player.pos.z
       );
+      return;
+    }
+
+    // 1. Cinematic Pre-Race Intro Flyover
+    if (this.introActive) {
+      const progress = 1 - Math.max(0, this.introTimer) / this.introDuration;
+      const startT = JAIPUR_DISTRICTS[this.selectedDistrict]?.startT || 0;
+      if (progress < 0.45) {
+        // Panoramic sweep over Jaipur track ahead
+        const p = progress / 0.45;
+        const s = this.world.getSampleAt((startT + 0.06 + p * 0.14) % 1);
+        this.camera.position.set(s.point.x + 28, s.point.y + 24, s.point.z + 28);
+        this.camera.lookAt(s.point.x, s.point.y + 3, s.point.z);
+      } else if (progress < 0.78) {
+        // Low swoop approaching starting grid
+        const p = (progress - 0.45) / 0.33;
+        const s = this.world.getSampleAt((startT + 0.03 * (1 - p)) % 1);
+        this.camera.position.set(
+          s.point.x + s.right.x * 11,
+          s.point.y + 7.5 - p * 3.0,
+          s.point.z + s.right.z * 11
+        );
+        this.camera.lookAt(this.player.pos.x, this.player.pos.y + 1.5, this.player.pos.z);
+      } else {
+        // Crane down behind player vehicle on grid
+        const p = (progress - 0.78) / 0.22;
+        const targetPos = new THREE.Vector3(
+          this.player.pos.x - Math.sin(this.player.heading) * (16 - p * 7.8),
+          this.player.pos.y + (9.5 - p * 6.0),
+          this.player.pos.z - Math.cos(this.player.heading) * (16 - p * 7.8)
+        );
+        this.camera.position.lerp(targetPos, Math.min(1, dt * 8));
+        this.camera.lookAt(
+          this.player.pos.x + Math.sin(this.player.heading) * 6,
+          this.player.pos.y + 1.4,
+          this.player.pos.z + Math.cos(this.player.heading) * 6
+        );
+      }
+      return;
+    }
+
+    // 2. Cinematic Slow-Mo Crash Orbit Camera
+    if (this.crashCamTimer > 0) {
+      const orbitAngle = this.player.heading + (1.35 - this.crashCamTimer) * 1.9 + 0.7;
+      const rad = 7.4;
+      this.camera.position.set(
+        this.crashFocusPos.x + Math.sin(orbitAngle) * rad,
+        this.crashFocusPos.y + 2.6,
+        this.crashFocusPos.z + Math.cos(orbitAngle) * rad
+      );
+      this.camera.lookAt(this.crashFocusPos.x, this.crashFocusPos.y + 1.0, this.crashFocusPos.z);
       return;
     }
 
@@ -1578,6 +1696,17 @@ class JaipurRushGame {
       this.startRace();
     });
 
+    const skipIntroBtn = document.getElementById('btn-skip-intro');
+    if (skipIntroBtn) {
+      skipIntroBtn.addEventListener('click', () => this.skipIntro());
+    }
+    window.addEventListener('keydown', (e) => {
+      if (this.introActive && (e.code === 'Space' || e.code === 'Enter' || e.code === 'Escape')) {
+        e.preventDefault();
+        this.skipIntro();
+      }
+    });
+
     document.getElementById('btn-mode-info').addEventListener('click', () => {
       this.totalLaps = this.totalLaps === 3 ? 5 : this.totalLaps === 5 ? 1 : 3;
       document.querySelector('#btn-mode-info .sub-desc').textContent =
@@ -1789,18 +1918,29 @@ class JaipurRushGame {
   animate() {
     requestAnimationFrame(this.animate);
 
-    const dt = Math.min(0.05, this.clock.getDelta());
+    const rawDt = Math.min(0.05, this.clock.getDelta());
     const elapsed = this.clock.getElapsedTime();
 
-    this.world.update(dt, elapsed, this.player.pos);
-    this.updateCrashParticles(dt);
+    let simDt = rawDt;
+    if (this.crashCamTimer > 0) {
+      this.crashCamTimer -= rawDt;
+      simDt = rawDt * 0.32; // Slow-motion cinematic crash replay!
+      if (this.crashCamTimer <= 0) {
+        this.crashCamTimer = 0;
+        const vig = document.getElementById('crash-vignette');
+        if (vig) vig.classList.add('hidden');
+      }
+    }
+
+    this.world.update(simDt, elapsed, this.player.pos);
+    this.updateCrashParticles(simDt);
 
     if (this.state === 'RACING') {
-      this.updatePhysics(dt);
+      this.updatePhysics(simDt);
       this.updateHUD();
     }
 
-    this.updateCamera(dt);
+    this.updateCamera(rawDt);
     this.renderer.render(this.scene, this.camera);
   }
 }

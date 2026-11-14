@@ -471,8 +471,8 @@ export class JaipurWorld {
       new THREE.Vector3(-412, 0, -112),   // Nahargarh & Jaigarh Foothill Curve
       new THREE.Vector3(-345, 0, 82),     // Amber Fort Highway
       new THREE.Vector3(-202, 0, 142),    // Jal Mahal Causeway (Man Sagar Lake)
-      new THREE.Vector3(-72, 0, 52),      // Choti Chaupar Return
-      new THREE.Vector3(0, 0, -180)       // Approach back to Badi Chaupar
+      new THREE.Vector3(-148, 0, -95),    // Choti Chaupar Return
+      new THREE.Vector3(-48, 0, -210)     // Approach back to Badi Chaupar
     ];
 
     this.curve = new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.45);
@@ -628,6 +628,7 @@ export class JaipurWorld {
       side: THREE.DoubleSide
     });
     const signPoleMat = new THREE.MeshLambertMaterial({ color: 0x94a3b8 });
+    this.secondarySamples = [];
 
     JAIPUR_SECONDARY_ROADS.forEach((rd) => {
       const vecPts = rd.pts.map(([x, y, z]) => new THREE.Vector3(x, y, z));
@@ -641,6 +642,7 @@ export class JaipurWorld {
       for (let i = 0; i <= segs; i++) {
         const t = i / segs;
         const pt = curve.getPointAt(t);
+        if (i % 2 === 0) this.secondarySamples.push(pt.clone());
         const tan = curve.getTangentAt(t).normalize();
         const right = new THREE.Vector3().crossVectors(up, tan).normalize();
 
@@ -1224,6 +1226,15 @@ export class JaipurWorld {
       const dx = x - pt.x;
       const dz = z - pt.z;
       if (dx * dx + dz * dz < minSq) return true;
+    }
+    if (this.secondarySamples) {
+      const secMinSq = Math.max(100, (minClearance - 2) * (minClearance - 2));
+      for (let i = 0; i < this.secondarySamples.length; i++) {
+        const pt = this.secondarySamples[i];
+        const dx = x - pt.x;
+        const dz = z - pt.z;
+        if (dx * dx + dz * dz < secMinSq) return true;
+      }
     }
     return false;
   }
